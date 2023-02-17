@@ -1,0 +1,218 @@
+import javax.swing.*;
+import java.util.*;
+
+public class Batalla {
+
+        int numFilas = 10;
+        int numColumnas = 10;
+        int playerShips;
+        int computerShips;
+        String[][] pos = new String[numFilas][numColumnas];
+        int[][] jug = new int[numFilas][numColumnas];
+    
+        public void createOceanMap(){
+
+            //Primera parte del Mapa del Océano
+            System.out.print("  ");
+            for(int i = 0; i < numColumnas; i++)
+                    System.out.print(i);
+            System.out.println();
+    
+            //Mitad del mapa del océano
+            for(int i = 0; i < pos.length; i++) {
+                for (int j = 0; j < pos[i].length; j++) {
+                    pos[i][j] = " ";
+                    if (j == 0)
+                        System.out.print(i + "|" + pos[i][j]);
+                    else if (j == pos[i].length - 1)
+                        System.out.print(pos[i][j] + "|" + i);
+                    else
+                        System.out.print(pos[i][j]);
+                }
+                System.out.println();
+            }
+    
+            //Ultima Parte del mapa del océano
+            System.out.print("  ");
+            for(int i = 0; i < numColumnas; i++)
+                System.out.print(i);
+            System.out.println();
+        }
+    
+        public void deployPlayerShips(){
+            Scanner input = new Scanner(System.in);
+
+            System.out.println("\nCreando Los Barcos:");
+            //Creando Los Barcos De los Jugadores
+            playerShips = 5;
+            for (int i = 1; i <= playerShips; ) {
+                System.out.print("Digite La Posicion en X de su: " + i + " Barco: ");
+                int x = input.nextInt();
+                System.out.print("Digite La Posicion en Y de su:" + i + " Barco: ");
+                int y = input.nextInt();
+    
+                if((x >= 0 && x < numFilas) && (y >= 0 && y < numColumnas) && (pos[x][y] == " "))
+                {
+                    pos[x][y] =   "@";
+                    i++;
+                }
+                else if((x >= 0 && x < numFilas) && (y >= 0 && y < numColumnas) && pos[x][y] == "@")
+                    System.out.println("No se pueden colocar dos o más Barcos en el mismo lugar");
+                else if((x < 0 || x >= numFilas) || (y < 0 || y >= numColumnas))
+                    System.out.println("No se pueden colocar los barcos fuera de: " + numFilas + " por " + numColumnas + " Posicion");
+            }
+            printOceanMap();
+        }
+    
+        public void deployComputerShips(){
+            System.out.println("\nEl Enemigo está creando barcos...");
+            //Creamos Los Barcos del Enemigo
+            computerShips = 5;
+            for (int i = 1; i <= computerShips; ) {
+                int x = (int)(Math.random() * 10);
+                int y = (int)(Math.random() * 10);
+    
+                if((x >= 0 && x < numFilas) && (y >= 0 && y < numColumnas) && (pos[x][y] == " "))
+                {
+                    pos[x][y] =   "x";
+                    System.out.println(i + ". Barco CREADO");
+                    i++;
+                }
+            }
+            printOceanMap();
+        }
+    
+        public void Battle(){
+            playerTurn();
+            computerTurn();
+    
+            printOceanMap();
+    
+            System.out.println();
+            System.out.println("Tus Barcos: " + playerShips + " | Barcos Enemigos: " + computerShips);
+            System.out.println();
+        }
+    
+        public void playerTurn(){
+            System.out.println("\nTU TURNO: ");
+            int x = -1, y = -1;
+            do {
+                Scanner input = new Scanner(System.in);
+                System.out.print("Digite en X la Cordenada: ");
+                x = input.nextInt();
+                System.out.print("Digite en Y la Cordenada: ");
+                y = input.nextInt();
+    
+                if ((x >= 0 && x < numFilas) && (y >= 0 && y < numColumnas)) //Posición válida TUYA
+                {
+                    if (pos[x][y] == "x") //Si la nave del Enemigo ya está allí El enemigo pierde la nave
+                    {
+                        System.out.println("¡Boom! ¡Has hundido el barco!");
+                        pos[x][y] = "!"; //Hit mark
+                        --computerShips;
+                    }
+                    else if (pos[x][y] == "@") {
+                        System.out.println("Oh no, has hundido tu propio barco :(");
+                        pos[x][y] = "x";
+                        --playerShips;
+                        ++computerShips;
+                    }
+                    else if (pos[x][y] == " ") {
+                        System.out.println("Lo siento, has perdido! :(");
+                        pos[x][y] = "-";
+                    }
+                }
+                else if ((x < 0 || x >= numFilas) || (y < 0 || y >= numColumnas))  //Posición válida ENEMIGA
+                    System.out.println("No se pueden colocar barcos fuera de: " + numFilas + " por " + numColumnas + " Posicion");
+            }while((x < 0 || x >= numFilas) || (y < 0 || y >= numColumnas));  //Seguir preguntando hasta que la respuesta sea válida
+        }
+    
+        public void computerTurn(){
+            System.out.println("\nTURNO DEL ENEMIGO: ");
+            //Guess co-ordinates
+            int x = -1, y = -1;
+            do {
+                x = (int)(Math.random() * 10);
+                y = (int)(Math.random() * 10);
+    
+                if ((x >= 0 && x < numFilas) && (y >= 0 && y < numColumnas)) //valid guess
+                {
+                    if (pos[x][y] == "@") //Si el barco del enemigo ya está allí el enemigo pierde el barco
+                    {
+                        System.out.println("¡El Enemigo ha hundido uno de sus barcos!");
+                        pos[x][y] = "x";
+                        --playerShips;
+                        ++computerShips;
+                    }
+                    else if (pos[x][y] == "x") {
+                        System.out.println("El Enemigo hundió uno de sus propios barcos");
+                        pos[x][y] = "!";
+                    }
+                    else if (pos[x][y] == " ") {
+                        System.out.println("El Enemigo Perdio!");
+                        //Guardar las suposiciones fallidas para el Enemigo
+                        if(jug[x][y] != 1)
+                            jug[x][y] = 1;
+                    }
+                }
+            }while((x < 0 || x >= numFilas) || (y < 0 || y >= numColumnas));  //Seguir preguntando hasta que la respuesta sea válida
+        }
+    
+        public void gameOver(){
+            System.out.println("Tus Barcos: " + playerShips + " | Barcos Enemigos: " + computerShips);
+            if(playerShips > 0 && computerShips <= 0)
+                System.out.println("¡Hurra! Has ganado la batalla :)");
+            else
+                System.out.println("Lo siento, has perdido la batalla :(");
+            System.out.println();
+       }
+    
+        public void printOceanMap(){
+            System.out.println();
+            //Primera Parte del Mapa
+            System.out.print("  ");
+            for(int i = 0; i < numColumnas; i++)
+                System.out.print(i);
+            System.out.println();
+    
+            //Mitad Parte del Mapa
+            for(int x = 0; x < pos.length; x++) {
+                System.out.print(x + "|");
+    
+                for (int y = 0; y < pos[x].length; y++){
+                    System.out.print(pos[x][y]);
+                }
+    
+                System.out.println("|" + x);
+            }
+    
+            //Ultima Parte Del Mapa
+            System.out.print("  ");
+            for(int i = 0; i < numColumnas; i++)
+                System.out.print(i);
+            System.out.println();
+        }
+    public static void main(String[] args){
+
+        JOptionPane.showMessageDialog(null, "Juego Batalla Naval:" + "\n" + "Juega Ahora!", "BattleShip Game", JOptionPane.PLAIN_MESSAGE, new ImageIcon("Batalla/battleship.jpg") );
+        System.out.println("**** Bienvenido A Batalla Naval ****");
+        System.out.println("Listo, El Mapa Ha sido Creado\n");
+        Batalla batalla = new Batalla();
+        batalla.createOceanMap();
+        batalla.deployPlayerShips();
+        batalla.deployComputerShips();
+        //Paso 1 - Crear El Limite
+
+        //Paso 2 - Crear las naves de los jugadores
+
+        //Paso 3 - Crear los barcos del PC
+
+        //Paso 4 - Batalla
+        do {
+            batalla.Battle();
+        }while(batalla.playerShips != 0 && batalla.computerShips != 0);
+
+        //Paso 5 - Game Over0
+        batalla.gameOver();
+    }
+}
